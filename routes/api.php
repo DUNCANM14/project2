@@ -5,14 +5,25 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
 // ------------------------------
-// AUTH
+// PUBLIC AUTH ROUTES
 // ------------------------------
 Route::post('/users/login', [UserController::class, 'login']);
-Route::get('/users/me', [UserController::class, 'me']);
-Route::put('/users/me/password', [UserController::class, 'updatePassword']);
 
 // ------------------------------
-// USER CRUD
+// PROTECTED ROUTES (must use Bearer token)
+// ------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Authenticated user info
+    Route::get('/users/me', [UserController::class, 'me']);
+
+    // Update authenticated user password
+    Route::put('/users/me/password', [UserController::class, 'updatePassword']);
+
+});
+
+// ------------------------------
+// USER CRUD (public for your project)
 // ------------------------------
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);

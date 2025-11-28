@@ -6,156 +6,127 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Friend;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    private $TOKEN = "mysecrettoken123";
-
-    private function authCheck(Request $request)
-    {
-        $header = $request->header('Authorization');
-        if (!$header) return false;
-
-        $token = trim(str_replace('Bearer', '', $header));
-        return $token === $this->TOKEN;
-    }
-
-    // GET /users
+    // GET /api/users
     public function index()
     {
-        return User::select('id', 'username', 'email', 'created_at')->get();
+        return User::all();
     }
 
-    // GET /users/{id}
+    // GET /api/users/{id}
     public function show($id)
     {
-        $user = User::select('id','username','email','created_at')->find($id);
-        if (!$user) return response()->json(['error'=>'User not found'], 404);
-
-        return $user;
+        return User::findOrFail($id);
     }
 
-    // POST /users
+    // POST /api/users
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'username' => 'required|string',
-            'email'    => 'required|email',
+            'username' => 'required|string|unique:users',
+            'email' => 'required|string|email|unique:users',
             'password' => 'required|string'
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        User::create($validated);
 
-        return response()->json(['message' => 'User created']);
+        return User::create($validated);
     }
 
-    // POST /users/login
+    // PUT /api/users/{id}
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'username' => 'sometimes|string',
+            'email' => 'sometimes|string|email',
+            'password' => 'sometimes|string'
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return $user;
+    }
+
+    // DELETE /api/users/{id}
+    public function destroy($id)
+    {
+        return User::destroy($id);
+    }
+
+    // POST /api/users/login
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string'
-        ]);
+        $user = User::where('username', $request->username)->first();
 
-        $user = User::where('username', $validated['username'])->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['error' => 'Invalid login'], 401);
         }
 
-        if (!Hash::check($validated['password'], $user->password)) {
-            return response()->json(['error' => 'Invalid password'], 401);
-        }
+        $token = $user->createToken('api')->plainTextToken;
 
-        return response()->json(['token' => $this->TOKEN]);
+        return response()->json(['token' => $token]);
     }
 
-    // GET /users/me
+    // GET /api/users/me
     public function me(Request $request)
     {
-        if (!$this->authCheck($request)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return response()->json([
-            'id' => 1,
-            'username' => 'demo',
-            'email' => 'demo@example.com'
-        ]);
+        return $request->user();
     }
 
-    // PUT /users/me/password
+    // PUT /api/users/me/password (FIXED)
     public function updatePassword(Request $request)
     {
-        if (!$this->authCheck($request)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Not authenticated'], 401);
         }
 
-        $validated = $request->validate([
-            'new_password' => 'required|string'
-        ]);
+        try {
+            $validated = $request->validate([
+                'password' => ['required', 'string', 'min:4'],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $e->errors(),
+            ], 422);
+        }
 
-        $newHash = Hash::make($validated['new_password']);
-
-        User::where('id', 1)->update(['password' => $newHash]);
+        $user->password = Hash::make($validated['password']);
+        $user->save();
 
         return response()->json(['message' => 'Password updated']);
     }
 
-    // PUT /users/{id}
-    public function update(Request $request, $id)
-    {
-        $user = User::find($id);
-        if (!$user) return response()->json(['error'=>'User not found'], 404);
-
-        $user->update([
-            'username' => $request->username,
-            'email'    => $request->email
-        ]);
-
-        return response()->json(['message'=>'User updated']);
-    }
-
-    // DELETE /users/{id}
-    public function destroy(Request $request, $id)
-    {
-        if (!$this->authCheck($request)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $user = User::find($id);
-        if (!$user) return response()->json(['error'=>'User not found'], 404);
-
-        $user->delete();
-        return response()->json(['message'=>'User deleted']);
-    }
-
-    // GET /users/{id}/friends
+    // GET /api/users/{id}/friends
     public function friends($id)
     {
-        return Friend::where('user_id', $id)
-            ->with('friendUser:id,username,email')
-            ->get()
-            ->map(fn ($f) => $f->friendUser);
+        $user = User::findOrFail($id);
+        return $user->friends;
     }
 
-    // POST /users/{id}/friends
+    // POST /api/users/{id}/friends
     public function addFriend(Request $request, $id)
     {
-        if (!$this->authCheck($request)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $validated = $request->validate([
-            'friend_id' => 'required|integer'
+        $request->validate([
+            'friend_id' => 'required|integer|exists:users,id'
         ]);
 
         Friend::create([
             'user_id' => $id,
-            'friend_id' => $validated['friend_id']
+            'friend_id' => $request->friend_id
         ]);
 
-        return response()->json(['message'=>'Friend added']);
+        return response()->json(['message' => 'Friend added']);
     }
 }
