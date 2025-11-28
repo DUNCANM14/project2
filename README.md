@@ -1,39 +1,47 @@
-# ASE 230 – Project 2  
-## Secure REST API with Laravel 12 + Sanctum + Docker
+ASE 230 – Project 2
+Secure REST API with Laravel 12, Sanctum, and Docker
 
-This is my full Project 2 backend. For this project I rebuilt my Project 1 REST API using **Laravel 12**, added full **Sanctum token authentication**, set up a **Docker environment**, and created some shell scripts to make running everything a lot easier.
+This is my full backend for Project 2. I rebuilt my Project 1 REST API using Laravel 12, added Sanctum token authentication, and set up a full Docker environment so the API is easy to run on any machine. Everything you need to run the backend is included here.
 
-Everything you need to run the API is in this repo.
+What’s Included
 
+Laravel 12 REST API (re-implementation of Project 1)
 
-##  What’s Included
+Sanctum authentication with token-based login
 
-- Laravel 12 REST API (Users + Friends system)
-- Login endpoint that returns a real API token
-- Sanctum auth handling protected routes
-- MySQL 8 database running in Docker
-- phpMyAdmin container for quick DB access
-- `docker-compose.yml` for the whole stack
-- Shell scripts (`setup.sh`, `run.sh`) to automate everything
-- Browser-based API tester (`public/test_api.html`)
-- Clean project structure, migrations, controllers, and models
+User CRUD (create, read, update, delete)
 
+Friends system (add friends and list friends)
 
-##  How To Run The Project
+MySQL 8 running inside Docker
 
-### 1. Clone the repo
+phpMyAdmin container for database management
+
+docker-compose.yml to run everything at once
+
+Dockerfile for building the Laravel application container
+
+Shell scripts (setup.sh and run.sh) for automation
+
+Browser-based API tester located in public/test_api.html
+
+Migrations, models, controllers, and all project files
+
+How To Run The Project
+
+Clone the repository
+
 git clone https://github.com/DUNCANM14/project2.git
 cd project2
 
-shell
-Copy code
 
-### 2. Make your `.env` file
+Create the .env file
+
 cp .env.example .env
 
-yaml
-Copy code
-Change the DB settings if needed:
+
+Update the database section to match the docker-compose settings:
+
 DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
@@ -41,108 +49,84 @@ DB_DATABASE=project2
 DB_USERNAME=project2
 DB_PASSWORD=project2
 
-shell
-Copy code
 
-### 3. Start Docker containers
+Start Docker containers
+
 docker-compose up -d --build
 
-shell
-Copy code
 
-### 4. Generate Laravel app key
+Generate the Laravel app key
+
 docker exec -it laravel-app php artisan key:generate
 
-shell
-Copy code
 
-### 5. Run migrations
+Run the database migrations
+
 docker exec -it laravel-app php artisan migrate
 
-csharp
-Copy code
 
-That’s it. The API is now live at:
+The API should now be running at:
+
 http://localhost:8000/api
 
-makefile
-Copy code
 
-phpMyAdmin:
+phpMyAdmin is available at:
+
 http://localhost:8080
 
-yaml
-Copy code
+API Testing
 
+Login endpoint:
 
-
-## Testing the API
-
-### Login
 POST /api/users/login
 
-makefile
-Copy code
+
 Returns:
-{ "token": "yourtokenhere" }
 
-shell
-Copy code
+{ "token": "your_api_token_here" }
 
-### Create a user
+
+Create a user:
+
 POST /api/users
 
-shell
-Copy code
 
-### Protected example (delete user)
+Delete a user (requires Bearer token):
+
 DELETE /api/users/1
 Authorization: Bearer <token>
 
-makefile
-Copy code
 
-### Browser API tester
-Open:
+You can also open the browser-based tester:
+
 public/test_api.html
 
-yaml
-Copy code
-
-
-
-##  Docker Commands
+Docker Commands
 
 Start all containers:
+
 docker-compose up -d
 
-vbnet
-Copy code
 
 Stop everything:
+
 docker-compose down
 
-makefile
-Copy code
 
-Rebuild:
+Rebuild the application container:
+
 docker-compose build --no-cache
 
-yaml
-Copy code
+Notes
 
+The vendor/ folder and .env file are ignored using .gitignore
 
+This repository contains only the backend for Project 2
 
-##  Notes
+Documentation for this project is hosted separately at:
 
-- `vendor/` and `.env` are ignored using `.gitignore`
-- This backend is separate from the Hugo documentation site
-- All documentation is hosted at:
-  https://duncanm14.github.io/project2-docs/
+https://duncanm14.github.io/project2-docs/
 
+End of README
 
-
-##  Done!
-
-If you follow the steps above, the API should run without any issues.  
-This is the backend portion of my Project 2 for ASE 230.
+This should cover everything needed to understand and run my Project 2 backend. If you follow the steps above, the API should run without any issues.
