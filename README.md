@@ -5,9 +5,8 @@ This is my full Project 2 backend. For this project I rebuilt my Project 1 REST 
 
 Everything you need to run the API is in this repo.
 
----
 
-## 🚀 What’s Included
+##  What’s Included
 
 - Laravel 12 REST API (Users + Friends system)
 - Login endpoint that returns a real API token
@@ -19,9 +18,8 @@ Everything you need to run the API is in this repo.
 - Browser-based API tester (`public/test_api.html`)
 - Clean project structure, migrations, controllers, and models
 
----
 
-## 🔧 How To Run The Project
+##  How To Run The Project
 
 ### 1. Clone the repo
 git clone https://github.com/DUNCANM14/project2.git
@@ -76,9 +74,9 @@ http://localhost:8080
 yaml
 Copy code
 
----
 
-## 🧪 Testing the API
+
+## Testing the API
 
 ### Login
 POST /api/users/login
@@ -111,9 +109,9 @@ public/test_api.html
 yaml
 Copy code
 
----
 
-## 🐳 Docker Commands
+
+##  Docker Commands
 
 Start all containers:
 docker-compose up -d
@@ -133,18 +131,18 @@ docker-compose build --no-cache
 yaml
 Copy code
 
----
 
-## 📌 Notes
+
+##  Notes
 
 - `vendor/` and `.env` are ignored using `.gitignore`
 - This backend is separate from the Hugo documentation site
 - All documentation is hosted at:
   https://duncanm14.github.io/project2-docs/
 
----
 
-## 👍 Done!
+
+##  Done!
 
 If you follow the steps above, the API should run without any issues.  
 This is the backend portion of my Project 2 for ASE 230.
