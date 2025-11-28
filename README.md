@@ -1,5 +1,7 @@
 ASE 230 – Project 2
+
 Secure REST API with Laravel 12, Sanctum, and Docker
+
 This is my full backend for Project 2. I rebuilt my Project 1 REST API using Laravel 12, added Sanctum
 token authentication, and set up a full Docker environment so the API is easy to run on any machine.
 Everything you need to run the backend is included here.
