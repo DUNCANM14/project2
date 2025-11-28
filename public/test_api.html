@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Project 2 – REST API Tester</title>
+<style>
+body { font-family: Arial; margin: 20px; }
+textarea { width: 600px; height: 200px; }
+input[type=text] { width: 400px; }
+#response { white-space: pre-wrap; background:#eee; padding:10px; width:600px; }
+</style>
+
+<script>
+console.log("DEBUG: test_api.html loaded correctly!");
+
+async function sendRequest() {
+    console.log("DEBUG: sendRequest() called.");
+
+    const url = document.getElementById('url').value.trim();
+    const method = document.getElementById('method').value.trim();
+    let body = document.getElementById('body').value;
+    let token = document.getElementById('token').value.trim();
+
+    let options = {
+        method,
+        headers: { "Content-Type": "application/json" }
+    };
+
+    if (token.length > 0) {
+        options.headers["Authorization"] = "Bearer " + token;
+    }
+
+    if (method !== "GET" && method !== "DELETE") {
+        try { 
+            body = JSON.stringify(JSON.parse(body)); 
+        } catch {
+            document.getElementById('response').textContent = "Invalid JSON body.";
+            return;
+        }
+        options.body = body;
+    }
+
+    try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        document.getElementById('response').textContent = text;
+    } catch (error) {
+        document.getElementById('response').textContent = "Request failed: " + error;
+    }
+}
+</script>
+</head>
+<body>
+
+<h1>Project 2 – REST API Tester</h1>
+
+<label>Endpoint URL:</label><br>
+<input id="url" type="text" value="http://localhost:8000/api/users"><br><br>
+
+<label>HTTP Method:</label>
+<select id="method">
+  <option>GET</option>
+  <option>POST</option>
+  <option>PUT</option>
+  <option>DELETE</option>
+</select><br><br>
+
+<label>Bearer Token:</label><br>
+<input id="token" type="text" placeholder="Paste token here"><br><br>
+
+<label>Request Body (JSON):</label><br>
+<textarea id="body">{}</textarea><br><br>
+
+<button onclick="sendRequest()">Send Request</button>
+
+<h3>Response:</h3>
+<pre id="response"></pre>
+
+</body>
+</html>
